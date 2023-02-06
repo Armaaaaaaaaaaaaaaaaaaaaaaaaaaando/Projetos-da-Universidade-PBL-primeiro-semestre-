@@ -1,0 +1,219 @@
+'''/*******************************************************************
+Autor: Armando de Lima Almeida
+Componente Curricular: Algoritmos I
+Concluído em: 17/09/2022
+Declaro que este código foi elaborado por mim de forma individual e não contém
+nenhum trecho de código de colega ou de outro autor, tais como provindos de livros e
+apostilas, e páginas ou documentos eletrônicos da internet. Qualquer trecho de código
+de outra autoria que não a minha está destacado com uma citação do autor e a fonte do
+código, e estou ciente que estes trechos não serão considerados para fins de avaliação.
+**********************************************************************/'''
+
+
+
+#declarações das variaveis
+#auxiliar1 serve para caso o usuario escolha a segunda opcao do menu antes de inserir
+#as informações, ele apresenta uma mensagem, e nao o relatorio vazio
+area_total=ultima_area_averiguada = auxiliar_1=0
+resposta_menu = 1
+
+# dicionarios, copias dos dicionario e listas utilizados no codigo.
+relacao_estado_area = {'MA': 0,'PI':0,'BA':0,'CE':0,'RN':0,'PB':0,'PE':0,'AL':0,'SE':0}
+relacao_arvore_area = {'Cajueiro':0,'Mangueira':0,'Dende':0,'Coqueiro':0,'Bambu gigante':0,'Ipe':0}
+quantidade_arvores = relacao_arvore_area.copy()
+quantidade_area_estado = relacao_estado_area.copy()
+validacao_de_codigo = []
+
+
+#loop para a apresentação do menu
+#o menu se repetirá até a resposta digitada for igual a 0
+while resposta_menu != '0':
+    aux1 = 0
+    print('=-'*5,'Menu principal','=-'*5)
+    print('[1] Adicionar dados')
+    print('[2] Mostrar relatorio final')
+    print('[0] Sair ')
+    resposta_menu = input(': ')
+
+
+    #ENTRADA DE DADOS
+    if resposta_menu == '1':
+    
+        auxiliar_1+=1
+        #variavel recebe valor booleano True, para ativar a estrutura repetição
+        #de cada validação, já que, para validação ocorrerá a condição. Sempre antes do
+        #loop essa variavel recebe o valor True, e sempre que termina o False.
+        quebra_de_loop = True
+      
+        #entrada do codigo da area com validação
+        #A repetição ocorre até a variavel booleana for igual a True. Ela receberá o valor False
+        #quando a entrada for aceita no processo de verificação.
+        while quebra_de_loop == True: 
+            codigo = input('Por favor digite o codigo da area: ').strip()
+            #processo de verificação 1
+            if codigo in validacao_de_codigo:
+                print('Esse codigo já está registrado')
+            #processo de verificação 2    
+            elif codigo.isnumeric() != True:
+                print('Por favor, o codigo referente é um numero. Digite-o corretamente: ')
+            #se a entrada for aceita, ou seja, as condições acimas falsas, a variavel recebe o valor False, finalizando a repetição    
+            else:
+                quebra_de_loop = False  
+        #nesse caso, o codigo será registrado na lista abaixo para não ocorrer a repetição da entrada do mesmo codigo        
+        validacao_de_codigo.append(codigo)
+      
+        #entrada da cidade com validação
+        #explicação da logica a partir da linha 43 até 62
+        quebra_de_loop = True
+        while quebra_de_loop == True:
+            cidade = input('Digite a cidade: ').strip()
+            if cidade.isnumeric() == True:
+                print('Por favor, digite o nome da cidade corretamente')
+            else:
+                quebra_de_loop = False   
+
+        #entrada da sigla do estado com validação
+        #A estrutura for é utilizada para imprimir na tela as chaves do dicionario, sendo elas as siglas dos estados.
+        for i in relacao_estado_area:
+          print(i,end=' - ')
+        #explicação da logica a partir da linha 43 até 62
+        quebra_de_loop = True  
+        while quebra_de_loop == True:
+          estado = input('\nDigite a sigla do estado: ').upper().strip()
+          if estado not in relacao_estado_area:
+            print('Voce precisa digitar a sigla do estado em questão')
+          else:
+            quebra_de_loop = False
+
+        quebra_de_loop = True
+        #entrada da base e altura com validação
+        #explicação da logica a partir da linha 43 até 62
+        while quebra_de_loop == True:
+            base = float(input('Digite a base região que será reflorestada: '))
+            altura = float(input('Digite a altura da região: '))
+            area = base*altura
+            if area <= 0 or base <= 0 or altura <= 0:
+                print('A area não dar resultado zero ou ser um valor negativo')
+            else:
+                quebra_de_loop = False  
+        area_total+=area
+
+        print('Tipos de arvore: ',end='')    
+        #entrada do tipo de arvore com validação
+        for i in relacao_arvore_area: 
+            print(i,end=' - ')     
+        #explicação da logica a partir da linha 43 até 62   
+        quebra_de_loop = True  
+        while quebra_de_loop == True:  
+          tipo_arvore = input('\nDigite o tipo de arvore: ').capitalize().strip()
+          if tipo_arvore not in relacao_arvore_area:
+            print('Voce precisa escolher apenas uma das arvores informadas')
+          else:
+            quebra_de_loop = False
+            
+
+        #CALCULOS DOS DADOS INSERIDOS
+        #relacionando a area e a quantidade em relação ao estado no dicionario
+        #se a sigla digitada estiver no dicionario, receberá como elemento a area calculada
+        #Linha 122, ocorre a utilização da copia do dicionario da linha 24, ou seja, as chaves são as siglas
+        #entretanto, os elementos serão as quantidades. 
+        if estado in relacao_estado_area:
+            relacao_estado_area[estado] += area
+            quantidade_area_estado[estado] += 1    
+
+    
+        #averiguação para retirar as informações da maior area registrada
+        #A variavel ultima_area_averiguada é declarada na linha tres, ela servirá para 
+        #comparação. Como ela inicia com zero, a primeira informação já entra como verdadeiro. Entretanto,
+        #apartir da segunda ingressão, ocorre a analise da ultima area averiguada, com a nova, que se for maior, 
+        #os valores são substituidos.
+        if area>ultima_area_averiguada:
+            codigo_do_maior = codigo
+            cidade_do_maior = cidade
+            estado_do_maior = estado
+            area_do_maior = area
+            tipoarvore_do_maior = tipo_arvore
+            ultima_area_averiguada = area
+
+        #avereriguação do conteudo digitado seguido do recebimento da informação   
+        #logica explicada nas linhas 118 a 119, entretanto, a copia está declarada na linha 23
+        if tipo_arvore in relacao_arvore_area:
+            relacao_arvore_area[tipo_arvore] += area
+            quantidade_arvores[tipo_arvore] +=1  
+ 
+        #analise para descobrir maior e menor quantidade de arvores    
+        #Na primeira variavel (149), ocorre a utilização das funções max e get, que, selecionará o maior elemento, e 
+        #aplicará sua chave a variavel. 
+        #Na segunda linha (150), a mesma logica, entretanto, recebendo apenas o elemtento
+        #Após isso, será feita a atribuição do maior coletado ao menor, para servi de comparação aos proximos valores ingressados
+        maior_arvore = (max(quantidade_arvores, key=quantidade_arvores.get))
+        maior_valor_arvore = max(quantidade_arvores.values())
+        menor_valor_arvore =  maior_valor_arvore
+        menor_arvore = 'nao é possivel estabelecer comparação'
+        for i in quantidade_arvores:
+            if quantidade_arvores[i] != 0 and menor_valor_arvore > quantidade_arvores[i]:
+                menor_arvore = i
+                menor_valor_arvore = quantidade_arvores[i]
+
+
+
+        #analise de menor estado registrado
+        #A estrutura for faz a analise de cada item do dicionario. Com o auxilio da variavel aux1 é 
+        #feita uma condição, no qual é feita a coleta do estado com a menor area calculada
+        for i in relacao_estado_area:
+            if aux1 == 0:
+                menor_estado = i
+                menor_estado_num = relacao_estado_area[i]
+                aux1+=1
+            else:
+                if menor_estado_num > relacao_estado_area[i]:
+                    menor_estado = i  
+                    menor_estado_num = relacao_estado_area[i] 
+
+                  
+  #SAIDA DE DADOS    
+    elif resposta_menu == '2':
+    
+      if auxiliar_1 == 0:
+        print('Estamos coletando informações...')
+        continuar = input('Clique enter para voltar ao menu')
+      else:  
+    
+        print('Retalorio do reflorestamento da região Nordeste')
+        print('=-'*30)
+        print('Area total reflorestada por estado')
+        #No for, será atribuido a variavel i, os item do dicionario, imprimindo a chave e seu elemento
+        for i in relacao_estado_area:
+            print(f'{i} {relacao_estado_area[i]} km²')                
+        print('=-'*30)
+        print(f'A area total reflorestada foi de {area_total} km²')  
+        print('=-'*30)
+        print('Area total por tipo de arvore')
+        #analise do dicionario e saida de acordo
+        for i in relacao_arvore_area:
+            print(f'{i:15} {relacao_arvore_area[i]} km² usada(s)') 
+        print('=-'*30)                    
+        print(f'O tipo de arvore mais usada foi {maior_arvore} e a menos usada {menor_arvore}')
+        print('Os tipos de arvore que ainda não foram usados: x')
+        for i in quantidade_arvores:
+            if quantidade_arvores[i] == 0:
+                print(i,end=' - ')
+        print()        
+        print('=-'*30)
+        print('Informações da maior area de extensão')
+        print(f'codigo: {codigo_do_maior}')
+        print(f'cidade: {cidade_do_maior}')
+        print(f'estado: {estado_do_maior}')
+        print(f'area: {area_do_maior}')
+        print(f'tipo de arvore: {tipoarvore_do_maior}')   
+        print('=-'*30)
+        print('Quantidade de area reflorestada por estado')
+        for i in quantidade_area_estado:
+            print(f'{i}---{quantidade_area_estado[i]}')         
+        print('=-'*30)
+        print(f'O estado com menor area reflorestada foi: {menor_estado}') 
+        print('=-'*30)      
+    elif resposta_menu != '0':
+      print('Por favor, escolha uma das opções do menu.')
+    else:
+      print('Finalizando...')
