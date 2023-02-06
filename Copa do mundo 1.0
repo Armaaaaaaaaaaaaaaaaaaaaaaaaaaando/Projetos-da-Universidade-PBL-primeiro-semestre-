@@ -1,0 +1,504 @@
+'''/*******************************************************************
+Autor: Armando de Lima Almeida
+Componente Curricular: Algoritmos I
+Concluído em: 01/12/2022
+Declaro que este código foi elaborado por mim de forma individual e não contém
+nenhum trecho de código de colega ou de outro autor, tais como provindos de livros e
+apostilas, e páginas ou documentos eletrônicos da internet. Qualquer trecho de código
+de outra autoria que não a minha está destacado com uma citação do autor e a fonte do
+código, e estou ciente que estes trechos não serão considerados para fins de avaliação.
+**********************************************************************/'''
+
+res = 0;geral = []
+#salva as informações no arquivo após a modificação de informações
+def salvar_arquivo(geral):
+    with open('world cup.txt','w') as primeiro:
+        primeiro.write('[A]Team\t\tPT GF GS SG \n')
+    aux_3 = 0
+    for contador in range(8):   
+        with open('world cup.txt','a') as arquivo:
+            letras = ['B','C','D','E','F','G','H']
+            aux = 1;aux_2 = 1
+            if contador != 0:
+                arquivo.write(f'[{letras[aux_3]}]Team\t\tPT GF GS SG \n')
+                aux_3+=1
+            for i in geral[contador].national_team:
+                arquivo.write('%s %s\n'%(i,geral[contador].pontos_saldo_gols_etc[i]))
+                aux+=1
+            arquivo.write('\n')
+            arquivo.write('\tJogos e informações\n')
+            while aux_2 < 7:
+                dicio_informacoes = geral[contador].informacoes_partida[aux_2]
+                for i in dicio_informacoes:
+                    arquivo.write('%s '%i)
+                arquivo.write('\n')
+                dicio_informacoes = geral[contador].historico_de_partida[aux_2]
+                for i in dicio_informacoes:
+                    if i == dicio_informacoes[-1]:
+                        arquivo.write('%s'%i)
+                    else:
+                        arquivo.write('%s-'%i)
+                aux_2+=1
+                arquivo.write('\n')
+            arquivo.write('\n')
+#atualiza a relação de classificados após a modificação de uma informação
+def atualizar_classificação(geral,pos):
+    i = pos
+    classificacao = {};gols_feitos = {}; gols_sofridos = {}
+    for pais in geral[i].national_team:
+        classificacao[pais] = 0
+        gols_feitos[pais] = [];gols_sofridos[pais] = []
+
+    #definicao de pontuacao
+    for partida in geral[i].historico_de_partida:
+        time1 = geral[i].historico_de_partida[partida][0];time2 = geral[i].historico_de_partida[partida][4]
+        gol1 = geral[i].historico_de_partida[partida][1];gol2 = geral[i].historico_de_partida[partida][3]
+        if gol1 > gol2:
+            classificacao[time1] += 3
+        elif gol2 > gol1:
+            classificacao[time2] += 3
+        else:
+            classificacao[time1] +=1
+            classificacao[time2] +=1
+        gols_feitos[time1].append(gol1);gols_sofridos[time2].append(gol1)
+        gols_sofridos[time1].append(gol2);gols_feitos[time2].append(gol2)
+    
+    #atualização pra por no arquivo
+    for pais in geral[i].national_team:
+        geral[i].pontos_saldo_gols_etc[pais][0] = classificacao[pais]
+        somafeitos = sum(gols_feitos[pais]);somasofridos = sum(gols_sofridos[pais])
+        saldo = somafeitos-somasofridos
+        geral[i].pontos_saldo_gols_etc[pais][1] = somafeitos
+        geral[i].pontos_saldo_gols_etc[pais][2] = somasofridos
+        geral[i].pontos_saldo_gols_etc[pais][3] = saldo
+    salvar_arquivo(geral)
+res = 0
+while res != '0':
+    print('[1] Ler informações do arquivo')
+    print('[2] Resultado dos jogos')
+    print('[3] Relatorio')
+    print('[4] Confronto das oitavas')
+    print('[5] Editar')
+    print('[0] Sair')
+    print('[6] Escrever no arquivo')
+    res = input('escolho: ')
+
+    if res == '1':    
+        geral = []
+        #primeira leitura do arquivo para realizar os calculos
+        def leitura_arquivo():
+            #leitura do arquivo
+            lista = []
+            with open('world cup.txt','r') as arquivo:
+                for i in arquivo:
+                    lista.append(i[:-1])
+            linha1 = 1;linha2 = 2;linha3 = 3;linha4 = 4
+            n1 = 7;n2 = 8
+            for contador in range(8):
+                primeiro = lista[linha1]
+                segundo = lista[linha2]
+                terceiro = lista[linha3]
+                quarto = lista[linha4]
+                quantidade = [primeiro,segundo,terceiro,quarto]
+                linha1+=20;linha2+=20;linha3+=20;linha4+=20
+
+                class grupo:
+                    def __init__(self):
+                        self.national_team = []
+                        self.pontos_saldo_gols_etc = {}
+                        self.historico_de_partida = {}
+                        self.informacoes_partida = {}
+                        self.classificados_oitavas = []
+
+                inf = grupo()
+                #fatiamento de string para pegar o nome do pais e suas pontuacao
+                for j in range(4):
+                    nome = [];pontos = []
+                    for i in quantidade[j]:
+                        #separa letra
+                        if i.isalpha() == True or i == ' ':
+                            nome.append(i)
+                            #separa numero
+                        elif i.isnumeric() == True:
+                            pontos.append(i)
+
+                        if len(pontos) != 4:
+                            pass
+                        else:  
+                            while nome[-1] == ' ':
+                                nome = nome[:-1]
+                            nome = ''.join(nome)
+                            #tirar os numeros do modo string
+                            numeros = []
+                            for i in pontos:
+                                numeros.append(int(i))
+                            inf.national_team.append(nome)
+                            inf.pontos_saldo_gols_etc[nome] = numeros
+                            break
+
+                #para a coleta das partidas
+                for i in range(6):
+                    inf.historico_de_partida[i+1] = []
+                    inf.informacoes_partida[i+1] = []
+
+                for i in range(6):
+                    auxiliar2 = []
+                    auxiliar2 = lista[n1].split()
+                    for j in auxiliar2:
+                        inf.informacoes_partida[i+1].append(j)
+                    auxiliar = []
+                    auxiliar = lista[n2].split('-')
+                    for j in auxiliar:
+                        if j.isnumeric():
+                            inf.historico_de_partida[i+1].append(int(j))
+                        else:
+                            inf.historico_de_partida[i+1].append(j)
+                    n1+=2;n2+=2
+                n1 -= 12; n2 -= 12
+                n1+=20;n2+=20
+                
+                def definindo_classificados():
+                    #definindo classificados
+                    times_pontuacao = {}
+                    for i in inf.national_team:
+                        auxiliar = inf.pontos_saldo_gols_etc[i].copy()
+                        times_pontuacao[i] = auxiliar
+                    inf.classificados_oitavas = []
+                    while len(inf.classificados_oitavas) < 2:   
+                        aux_3 = 0
+                        for time in times_pontuacao:
+                            if aux_3 == 0:
+                                maior_pontos = times_pontuacao[time][0]
+                                classificado = time
+                                aux_3+=1
+                            else:
+                                #verificacao pontos
+                                if maior_pontos < times_pontuacao[time][0]:
+                                    maior_pontos = times_pontuacao[time][0]
+                                    classificado = time
+                                elif maior_pontos == times_pontuacao[time][0]:
+                                    #verificacao saldo de gol
+                                    if times_pontuacao[classificado][3] < times_pontuacao[time][3]:
+                                        classificado = time
+                                        maior_pontos = times_pontuacao[time][0]
+                                    #verificacao gols feitos
+                                    elif times_pontuacao[classificado][1] < times_pontuacao[time][1]:
+                                        classificado = time
+                                        maior_pontos = times_pontuacao[time][0]
+                        inf.classificados_oitavas.append(classificado)
+                        times_pontuacao[classificado][0] = -1
+                definindo_classificados()
+                geral.append(inf)
+            print()
+            print('####Informações lidas com sucesso####')
+            print()
+        leitura_arquivo()
+
+    elif res == '2':
+        if len(geral) == 0:
+            print()
+            print('###Não foi feita a leitura ainda###')
+            print()
+        else:
+            print('Resultado dos jogos por grupo')
+            grupos = ['Grupos A','Grupos B','Grupos C','Grupos D','Grupos E','Grupos F','Grupos G','Grupos H']
+            for i in range(8):
+                print(grupos[i])
+                for j in geral[i].historico_de_partida:
+                    print(geral[i].historico_de_partida[j])
+                print()
+    elif res == '3':
+        if len(geral) == 0:
+            print()
+            print('###Não foi feita a leitura ainda###')
+            print()
+        else:
+            def gols():
+                #pegando a soma total de gols e media por grupo
+                soma_gols = 0;media_gols = []; grupos = ['Grupos A','Grupos B','Grupos C','Grupos D','Grupos E','Grupos F','Grupos G','Grupos H']
+                for i in range(8):
+                    soma__gol_grupo = 0
+                    time_1 = geral[i].national_team[0]
+                    time_2 = geral[i].national_team[1]
+                    time_3 = geral[i].national_team[2]
+                    time_4 = geral[i].national_team[3]
+                    soma__gol_grupo += geral[i].pontos_saldo_gols_etc[time_1][1]
+                    soma__gol_grupo += geral[i].pontos_saldo_gols_etc[time_2][1]
+                    soma__gol_grupo += geral[i].pontos_saldo_gols_etc[time_3][1]
+                    soma__gol_grupo += geral[i].pontos_saldo_gols_etc[time_4][1]
+                    soma_gols+=soma__gol_grupo
+                    media_gols.append(soma__gol_grupo)
+                print('A media de gols da primeira fase foi de: %1f'%(soma_gols/32))
+                for i in range(8):
+                    print(f'A media de gols no grupo {grupos[i]} foi {media_gols[i]/4}')
+            gols()
+            maior_goleada = []; aux = 0
+            for i in range(8):
+                for partida in geral[i].historico_de_partida:
+                    if aux == 0:
+                        time1 = geral[i].historico_de_partida[partida][0];time2 = geral[i].historico_de_partida[partida][4]
+                        gol1 = geral[i].historico_de_partida[partida][1];gol2 = geral[i].historico_de_partida[partida][3]
+                        goleada = gol1 - gol2
+                        if goleada < 0:
+                            goleada = gol2 - gol1
+                        maior_goleada.append(geral[i].historico_de_partida[partida])
+                        maior_goleada.append(geral[i].informacoes_partida[partida])
+                        aux+=1
+                    else:
+                        time1 = geral[i].historico_de_partida[partida][0];time2 = geral[i].historico_de_partida[partida][4]
+                        gol1 = geral[i].historico_de_partida[partida][1];gol2 = geral[i].historico_de_partida[partida][3]
+                        goleada1 = gol1 - gol2
+                        if goleada1 < 0:
+                            goleada1 = gol2 - gol1
+                        if goleada1 > goleada:
+                            goleada = goleada1
+                            maior_goleada = []
+                            maior_goleada.append(geral[i].historico_de_partida[partida])
+                            maior_goleada.append(geral[i].informacoes_partida[partida])
+            print(f'maior goleada aconteceu no dia {maior_goleada[1]} com placar de {maior_goleada[0]}')
+            
+
+    elif res == '4':
+        if len(geral) == 0:
+            print()
+            print('###Nao foi feita a leitura ainda###')
+            print()
+        else:
+            grupos = ['Grupos A','Grupos B','Grupos C','Grupos D','Grupos E','Grupos F','Grupos G','Grupos H']
+            print('classificados de cada grupo')
+            pos1 = 1;pos2 = 2
+            for i in range(len(geral)):
+                print(f'{grupos[i]}-----> {pos1}º  {geral[i].classificados_oitavas[0]:16} {pos2}º  {geral[i].classificados_oitavas[1]}')
+            print()
+            print('\t\tOITAVAS DE FINAIS')
+            t1 = 0; t2 = 1
+            for i in range(4):
+                p1 = 0;p2 = 1
+                for j in range(2):
+                    print(f'\t\t{geral[t1].classificados_oitavas[p1]:10} X \t{geral[t2].classificados_oitavas[p2]}')
+                    p1,p2 = p2,p1
+                t1+=2;t2+=2
+    elif res == '5':
+        if len(geral) == 0:
+            print()
+            print('###Nao foi feita a leitura ainda###')
+            print()
+        else:
+            res2 = 0
+            while res2 != '0':
+                print()
+                print('Caso não queira nenhum grupo, digite qualquer outra coisa')
+                letras = ['A','B','C','D','E','F','G','H']
+                print('Grupos: ',letras)
+                res3 = input('Qual grupo? ').upper()
+                if res3 in letras:
+                    pos = letras.index(res3)
+                    local = geral[pos]
+                else:
+                    break
+                res3 = 0
+                print()
+                print('Digite o que voce quer editar')
+                print('[1] Nome de seleção')
+                print('[2] Resultado dos jogos')
+                print('[3] Informações dos jogos')
+                res3 = input(': ')
+                if res3 == '1':
+                    print(local.national_team)
+                    quero = input('Digite o nome da seleção que quer trocar: ').capitalize()
+                    #caso queira voltar digite -1
+                    if quero == '-1':
+                        break
+                    while quero not in local.national_team:
+                        print('esse pais não se encontra')
+                        quero = input('Digite o nome da seleção que quer trocar: ').capitalize()
+                    novo = input('Digite o nome da nova seleção: ').capitalize()
+                    while novo in local.national_team:
+                        print('esse pais já está')
+                        novo = input('Digite o nome da nova seleção: ').capitalize()
+                    if quero in local.national_team:
+                            posicao_antiga_selecao = local.national_team.index(quero)
+                            #trocar o nome nos resultados dos jogos
+                            for lista_jogos in local.historico_de_partida:
+                                for elementos in local.historico_de_partida[lista_jogos]:
+                                    if elementos == quero:
+                                            pos2 = local.historico_de_partida[lista_jogos].index(elementos)
+                                            local.historico_de_partida[lista_jogos][pos2] = novo
+                            #trocar no saldo de gols
+                            new = local.pontos_saldo_gols_etc[quero]
+                            local.pontos_saldo_gols_etc.pop(quero)
+                            local.pontos_saldo_gols_etc[novo] = new
+                            local.national_team[posicao_antiga_selecao] = novo
+                            #subistituir no classificados, se tiver
+                            if quero == local.classificados_oitavas[0]:
+                                local.classificados_oitavas[0] = novo
+                            elif quero == local.classificados_oitavas[1]:
+                                local.classificados_oitavas[1] = novo
+                    else:
+                        print('Nao ha essa seleção')
+                    print(local.national_team)
+                    salvar_arquivo(geral)
+
+                
+                #modificar resultado da partida
+                elif res3 == '2':
+                    grupo_atualizado = pos
+                    aux_posicao = 1
+                    for i in local.historico_de_partida:
+                        print(f'{aux_posicao}º', local.historico_de_partida[i])
+                        aux_posicao+=1
+                    resultado = int(input('Qual resultado voce quer trocar: '))
+                    if resultado < 1 or resultado > 6:
+                        print('nao houve alteracao')
+                    else:
+                        print(local.historico_de_partida[resultado])
+                        primeiro = int(input('gol do primeiro time: '))
+                        segundo = int(input('gol do segundo time: '))
+                        local.historico_de_partida[resultado][1] = primeiro
+                        local.historico_de_partida[resultado][3] = segundo
+
+                        print(local.historico_de_partida[resultado])
+                        #fazer a atualização da classificação aqui mesmo
+                        atualizar_classificação(geral,pos)
+                        geral = []
+                        leitura_arquivo()
+
+                #modificar informações da partida
+                elif res3 == '3':
+                    aux_posicao = 1
+                    for i in local.informacoes_partida:
+                        print(f'{aux_posicao}º', local.informacoes_partida[i])
+                        aux_posicao+=1    
+                    resultado = int(input('Posição da informação: '))
+                    print('[1] Stadium')
+                    print('[2] Date')
+                    print('[3] Time')
+                    tipo = input('O que voce quer trocar: ')
+                    if tipo == '1':
+                        new = input('novo estadio: ')
+                        local.informacoes_partida[resultado][0] = new
+                        print('alteração feita',local.informacoes_partida[resultado])
+                    elif tipo == '2':
+                        new = input('nova data: ')
+                        local.informacoes_partida[resultado][1] = new
+                        print('alteração feita',local.historico_de_partida[resultado])
+                    elif tipo == '3':
+                        new = input('novo horario: ')
+                        local.informacoes_partida[resultado][2] = new
+                        print('alteração feita',local.historico_de_partida[resultado])
+                    salvar_arquivo(geral)
+    elif res == '6':
+                #programa principal
+        geral = []
+        for contador in range(8):
+            class Group_A:
+                def __init__(self):
+                    self.national_team = []
+                    self.informacoes_partida = {}
+                    self.historico_de_partida = {}
+                    self.pontos_saldo_gols_etc = {}
+            information = Group_A()
+            gols_feitos = {};gols_sofridos = {};informações = {}
+            #match definition
+            def partidas(team,nation,position,aux_para_jogos):
+                if nation == team[position]:
+                    pass
+                else:
+                    print(f'{nation} X {team[position]}')
+                    stadium = input('Stadium: ');date = input('Date: ');time = input('Time of the game: ')
+                    lista_para_concatenar_infor = []
+                    lista_para_concatenar_infor.append(stadium);lista_para_concatenar_infor.append(date);lista_para_concatenar_infor.append(time)
+                    for i in lista_para_concatenar_infor:
+                        information.informacoes_partida[aux_para_jogos].append(i)
+                    goals1 = int(input(f'Goals for {nation}: '))
+                    gols_feitos[nation].append(goals1); gols_sofridos[team[position]].append(goals1)
+                    goals2 = int(input(f'Goals for {team[position]}: '))
+                    gols_feitos[team[position]].append(goals2); gols_sofridos[nation].append(goals2)
+                    if goals1 > goals2:
+                        classificacao[nation] += 3
+                    elif goals2>goals1:
+                        classificacao[team[position]]+=3
+                    else:
+                        classificacao[nation]+=1
+                        classificacao[team[position]]+=1
+                    result_of_this_match_1 = [nation, goals1,'X',goals2,team[position]]
+
+                    for i in result_of_this_match_1:
+                        information.historico_de_partida[aux_para_jogos].append(i)
+                    return aux_para_jogos
+                
+            classificacao = {}
+            #guarda as seleções
+            for i in range(4):
+                selecao =  input(f'{i+1}º Nation team: ').capitalize().strip()
+                information.national_team.append(selecao)
+                classificacao[selecao] = 0
+                gols_feitos[selecao] = []
+                gols_sofridos[selecao] = []
+                informações[selecao] = []
+                information.pontos_saldo_gols_etc[selecao] = []
+
+            #criando o historico de partida dos times
+            for i in range(1,7):
+                information.historico_de_partida[i] = []
+                information.informacoes_partida[i] = []
+
+            #definição de jogos e resultados
+            po=0; aux_para_jogos = 1
+            for nation in information.national_team:
+                for position in range(po,len(information.national_team)):
+                    if nation != information.national_team[position]:
+                        za = partidas(information.national_team,nation,position,aux_para_jogos)
+                        aux_para_jogos+=1
+                po+=1   
+            def saldo_de_gol(information,gols_feitos, gols_sofridos,informações):
+                #colheita do saldo de gols e gols marcados
+                for i in gols_feitos:
+                    gf = sum(gols_feitos[i])
+                    gs = sum(gols_sofridos[i])
+                    #salvando os objetos na classe pra por no arquivo
+                    information.pontos_saldo_gols_etc[i].append(classificacao[i])
+                    information.pontos_saldo_gols_etc[i].append(gf)
+                    information.pontos_saldo_gols_etc[i].append(gs)
+                    information.pontos_saldo_gols_etc[i].append(gf-gs)
+                    informações[i].append(gf-gs)
+                    informações[i].append(gf)
+                return information
+
+            information = saldo_de_gol(information, gols_feitos, gols_sofridos,informações)
+            #função para desempatar por saldo de gols
+            def desempate(i,classificação,maior_pontuação,time_maior_pontuação):
+                if informações[i][0] > informações[time_maior_pontuação][0]:
+                    time_maior_pontuação = i 
+                    maior_pontuação = classificação[i]
+                elif informações[i][1] > informações[time_maior_pontuação][1]:
+                    time_maior_pontuação = i 
+                    maior_pontuação = classificação[i]
+                    return time_maior_pontuação,maior_pontuação
+
+            geral.append(information)
+            #adicionando no arquivo
+        aux3 = 0
+        for contador in range(8):
+            with open('word.txt','a') as arquivo:
+                letras = ['A','B','C','D','E','F','G','H']
+                aux = 1;aux_2 = 1
+                arquivo.write(f'[{letras[aux3]}]Team\t\tPT GF GS SG \n')
+                aux3+=1
+                for i in geral[contador].national_team:
+                    arquivo.write('%s %s\n'%(i,geral[contador].pontos_saldo_gols_etc[i]))
+                    aux+=1
+                arquivo.write('\n')
+                arquivo.write('\tJogos e informações\n')
+                while aux_2 < 7:
+                    for i in geral[contador].informacoes_partida[aux_2]:
+                        arquivo.write('%s '%i)
+                    arquivo.write('\n')
+                    for i in geral[contador].historico_de_partida[aux_2]:
+                        if i == geral[contador].historico_de_partida[aux_2][-1]:
+                            arquivo.write('%s'%i)
+                        else:
+                            arquivo.write('%s-'%i)
+                    aux_2+=1
+                    arquivo.write('\n')
+                arquivo.write('\n')
